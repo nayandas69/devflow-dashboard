@@ -1,0 +1,23 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Next.js
+/.next/
+/out/
+
+# Production
+/build
+
+
+# Local env files
+.env*.local
+.env
+
+# Next.js build output
+.next
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
