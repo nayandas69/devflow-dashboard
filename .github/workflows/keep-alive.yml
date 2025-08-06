@@ -1,0 +1,70 @@
+# DevFlow Dashboard - Keep Database Alive Workflow
+# Author: Nayan Das <nayanchandradas@hotmail.com>
+# Repository: https://github.com/nayandas69/devflow-dashboard
+# License: MIT
+
+name: Keep Database Alive
+
+on:
+  schedule:
+    # Run every 24 hours at 12:00 UTC
+    - cron: '0 12 * * *'
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  ping-database:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Ping Health Endpoint
+        run: |
+          echo "🏥 Pinging health endpoint..."
+          
+          # Use GitHub secret (your personal URL)
+          HEALTH_URL="${{ secrets.HEALTH_ENDPOINT_URL }}"
+          
+          # Check if secret is set
+          if [ -z "$HEALTH_URL" ]; then
+            echo "❌ HEALTH_ENDPOINT_URL secret is not set!"
+            echo "🔧 Please add your Vercel URL to GitHub secrets"
+            exit 1
+          fi
+          
+          echo "📡 Pinging URL: $HEALTH_URL"
+          
+          # Make the request and capture response
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$HEALTH_URL")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+          
+          echo "📡 Response Code: $HTTP_CODE"
+          echo "📄 Response Body: $BODY"
+          
+          # Check if request was successful
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Database ping successful!"
+            echo "🎯 Supabase database is now active for another 7 days"
+            echo "📊 Server Status: $(echo "$BODY" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)"
+            echo "⚡ Response Time: $(echo "$BODY" | grep -o '"responseTime":"[^"]*"' | cut -d'"' -f4)"
+          else
+            echo "❌ Database ping failed!"
+            echo "🚨 HTTP Code: $HTTP_CODE"
+            echo "💥 Response: $BODY"
+            exit 1
+          fi
+      
+      - name: Log Success
+        if: success()
+        run: |
+          echo "🎉 Keep-alive job completed successfully"
+          echo "⏰ Next run: $(date -d '+1 day' -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "🔄 Your DevFlow dashboard database will stay active!"
+      
+      - name: Log Failure
+        if: failure()
+        run: |
+          echo "💥 Keep-alive job failed"
+          echo "🔍 Check your GitHub secret HEALTH_ENDPOINT_URL"
+          echo "🛠️ Verify your Vercel deployment is working"
