@@ -17,6 +17,7 @@ import { EmptyState } from "@/components/empty-state"
 import { CreateProjectModal } from "@/components/create-project-modal"
 import { EditProjectModal } from "@/components/edit-project-modal"
 import { ViewProjectModal } from "@/components/view-project-modal"
+import { ServerStatusCard } from "@/components/server-status-card"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -171,6 +172,9 @@ export function DashboardOverview({ initialProjects }: DashboardOverviewProps) {
           </Card>
         ))}
       </div>
+
+      {/* Server Status Card */}
+      <ServerStatusCard />
 
       {/* Recent Projects */}
       <div className="space-y-4">
